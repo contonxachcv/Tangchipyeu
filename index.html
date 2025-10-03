@@ -11,8 +11,8 @@
       height:100vh;
       background: radial-gradient(circle at 30% 20%, #1b1b2f, #0d0d1a 80%);
       overflow:hidden;
-      perspective: 1000px; /* 3D cho toàn body */
-      -webkit-perspective: 1000px; /* Prefix Safari */
+      perspective: 1000px;
+      -webkit-perspective: 1000px;
     }
     .star {
       position:absolute;
@@ -26,10 +26,6 @@
     @keyframes twinkle {
       from { opacity:0.2; transform:scale(0.8); }
       to   { opacity:1; transform:scale(1.2); }
-    }
-    @-webkit-keyframes twinkle {
-      from { opacity:0.2; -webkit-transform:scale(0.8); }
-      to   { opacity:1; -webkit-transform:scale(1.2); }
     }
     .firefly {
       position:absolute;
@@ -47,15 +43,13 @@
       75%  { transform: translate(-120px,-60px); }
       100% { transform: translate(0,0); }
     }
+
     .lantern-container {
       position:absolute;
       top:0;
       transform-origin: top center;
-      perspective: 500px; /* Thêm perspective riêng cho container để fix 3D bug Safari */
-      -webkit-perspective: 500px;
+      perspective: 500px;
       animation: sway 5s cubic-bezier(0.45,0.05,0.55,0.95) infinite alternate;
-      -webkit-animation: sway 5s cubic-bezier(0.45,0.05,0.55,0.95) infinite alternate;
-      will-change: transform;
     }
     .lantern-container.left   { left:20%; transform:translateX(-50%); }
     .lantern-container.center { left:50%; transform:translateX(-50%); }
@@ -68,44 +62,39 @@
       background:linear-gradient(to bottom, #A52A2A, #E9967A);
     }
 
+    /* Lồng đèn không còn khung chữ nhật */
     .lantern {
-      width:180px;
       cursor:pointer;
-      margin-top:0;
-      /* Bỏ bounce ở đây để tránh nested transform */
+      position: relative;
+      box-shadow: 0 0 25px rgba(255,200,100,0.8), 0 0 60px rgba(255,120,50,0.6);
+      border: none;
+      outline: none;
+      padding: 0;
+      margin: 0;
+      background: none;
+      display: inline-block;
+      width: auto;
+      height: auto;
     }
     .lantern img {
-      width: 50%;
       display:block;
-      margin: 0 auto;
-      filter: drop-shadow(0 0 25px rgba(255,200,100,0.8))
-              drop-shadow(0 0 60px rgba(255,120,50,0.6));
-      transition: filter 0.3s ease;
-      -webkit-transform: translateZ(0) rotate3d(0,0,1,0deg); /* Force hardware + initial rotate để fix glitch */
-      transform: translateZ(0) rotate3d(0,0,1,0deg);
-      backface-visibility: hidden;
-      -webkit-backface-visibility: hidden;
-      will-change: filter;
-      animation: bounce 3s ease-in-out infinite; /* Di chuyển bounce vào img */
-      -webkit-animation: bounce 3s ease-in-out infinite;
+      width:100px;
+      height:auto;
+      border:none;
+      margin:0;
+      padding:0;
+      background:none;
+      animation: bounce 3s ease-in-out infinite;
     }
+
     @keyframes sway {
       0%   { transform:rotate(-3deg); }
       50%  { transform:rotate(2deg); }
       100% { transform:rotate(-2deg); }
     }
-    @-webkit-keyframes sway {
-      0%   { -webkit-transform:rotate(-3deg); }
-      50%  { -webkit-transform:rotate(2deg); }
-      100% { -webkit-transform:rotate(-2deg); }
-    }
     @keyframes bounce {
-      0%,100% { transform:translateY(0) translateZ(0) rotate3d(0,0,1,0deg);} /* Kết hợp translateZ để mượt */
-      50% { transform:translateY(5px) translateZ(0) rotate3d(0,0,1,0deg);}
-    }
-    @-webkit-keyframes bounce {
-      0%,100% { -webkit-transform:translateY(0) translateZ(0) rotate3d(0,0,1,0deg);}
-      50% { -webkit-transform:translateY(5px) translateZ(0) rotate3d(0,0,1,0deg);}
+      0%,100% { transform:translateY(0); }
+      50% { transform:translateY(5px); }
     }
 
     .hint {
@@ -174,73 +163,6 @@
       0%,100% { transform:translateX(-50%) translateY(0); }
       50% { transform:translateX(-50%) translateY(-15px); }
     }
-
-    @media screen and (max-width: 480px) {
-      .lantern {
-        width: 140px;
-      }
-      .rope {
-        height: 120px;
-      }
-      .center-text {
-        font-size: 20px;
-        top: 55%;
-      }
-      .hint {
-        font-size: 16px;
-        bottom: 20px;
-      }
-      .arrow-up {
-        bottom: 50px;
-        font-size: 30px;
-      }
-    }
-
-    @media screen and (max-width: 360px) {
-      .lantern-container.left   { left:25%; }
-      .lantern-container.center { left:50%; }
-      .lantern-container.right  { left:75%; }
-      .lantern {
-        width: 120px;
-      }
-      .rope {
-        height: 100px;
-      }
-      .center-text {
-        font-size: 18px;
-        top: 50%;
-      }
-      .hint {
-        font-size: 14px;
-        bottom: 10px;
-      }
-      .arrow-up {
-        bottom: 30px;
-        font-size: 25px;
-      }
-    }
-
-    @media (orientation: landscape) {
-      .center-text {
-        top: 45%;
-        line-height: 1.2;
-      }
-      .arrow-up {
-        bottom: 40px;
-      }
-      .hint {
-        bottom: 20px;
-      }
-      .rope {
-        height: 120px;
-      }
-      .lantern {
-        width: 140px;
-      }
-      .lantern-container.left   { left:20%; }
-      .lantern-container.center { left:50%; }
-      .lantern-container.right  { left:80%; }
-    }
   </style>
 </head>
 <body>
@@ -256,31 +178,30 @@
   <div class="lantern-container left">
     <div class="rope"></div>
     <div class="lantern" data-link="mualongden.html">
-      <img src="longden1.png" alt="Lồng đèn 1" loading="eager" onerror="this.parentElement.innerHTML='<div style=\'width:180px;height:100px;background:radial-gradient(circle,#ffcc66,#ff9900);border-radius:50px;animation:bounce 3s ease-in-out infinite;\'></div>';" />
+      <img src="longden1.png" alt="Lồng đèn 1" />
     </div>
   </div>
 
   <div class="lantern-container center">
     <div class="rope"></div>
     <div class="lantern" data-link="phaohoa/index2.html">
-      <img src="longden2.png" alt="Lồng đèn 2" loading="eager" onerror="this.parentElement.innerHTML='<div style=\'width:180px;height:100px;background:radial-gradient(circle,#ffcc66,#ff9900);border-radius:50px;animation:bounce 3s ease-in-out infinite;\'></div>';" />
+      <img src="longden2.png" alt="Lồng đèn 2" />
     </div>
   </div>
 
   <div class="lantern-container right">
     <div class="rope"></div>
     <div class="lantern" data-link="banhtrunthu.html">
-      <img src="longden3.png" alt="Lồng đèn 3" loading="eager" onerror="this.parentElement.innerHTML='<div style=\'width:180px;height:100px;background:radial-gradient(circle,#ffcc66,#ff9900);border-radius:50px;animation:bounce 3s ease-in-out infinite;\'></div>';" />
+      <img src="longden3.png" alt="Lồng đèn 3" />
     </div>
   </div>
 
   <div class="arrow-up" id="arrow">⬆</div>
-
-  <div class="hint" id="hint">Nhấn vào lồng đèn đi </div>
+  <div class="hint" id="hint">Nhấn vào lồng đèn đi</div>
   <div class="fade-out" id="fade"></div>
 
   <script>
-    const lanterns=document.querySelectorAll(".lantern img");
+    const lanterns=document.querySelectorAll(".lantern");
     const fade=document.getElementById("fade");
     const arrow=document.getElementById("arrow");
     const hint=document.getElementById("hint");
@@ -309,32 +230,12 @@
       fireflyContainer.appendChild(fly);
     }
 
-    function randomGlow(lantern){
-      setInterval(()=>{
-        const blur = Math.floor(Math.random()*40)+20;
-        const spread = Math.floor(Math.random()*70)+30;
-        const color = [
-          `rgba(255,180,80,${Math.random().toFixed(2)})`,
-          `rgba(255,120,50,${Math.random().toFixed(2)})`,
-          `rgba(255,220,150,${Math.random().toFixed(2)})`
-        ];
-        lantern.style.filter = `
-          drop-shadow(0 0 ${blur}px ${color[0]})
-          drop-shadow(0 0 ${spread}px ${color[1]})
-          drop-shadow(0 0 ${spread+30}px ${color[2]})
-        `;
-      }, 1000 + Math.random()*1000);
-    }
-    lanterns.forEach(randomGlow);
     let index = 0;
     function showText(){
       if(index > 0) texts[index-1].style.opacity=0; 
       if(index < texts.length){
         texts[index].style.opacity=1;
-        setTimeout(()=>{
-          index++;
-          showText();
-        }, 3000); 
+        setTimeout(()=>{ index++; showText(); },3000); 
       } else {
         arrow.style.display="block";
         hint.style.display="block";
@@ -342,26 +243,12 @@
     }
     showText();
 
-    document.querySelectorAll(".lantern").forEach(lantern=>{
+    lanterns.forEach(lantern=>{
       lantern.addEventListener("click",()=>{
         const targetPage = lantern.getAttribute("data-link");
         fade.style.opacity="1";
         setTimeout(()=>{ window.location.href=targetPage; },1000);
       });
-    });
-
-    let animationPaused = false;
-    document.addEventListener('visibilitychange', () => {
-      if (document.hidden) {
-        animationPaused = true;
-        document.body.style.animationPlayState = 'paused';
-      } else {
-        if (animationPaused) {
-          animationPaused = false;
-          document.body.style.animationPlayState = 'running';
-          document.querySelectorAll('.lantern-container').forEach(c => c.style.transform = 'rotate(0deg)');
-        }
-      }
     });
   </script>
 </body>
