@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
   <title>Lồng Đèn Kỳ Lân</title>
   <style>
     body {
@@ -10,6 +11,7 @@
       height:100vh;
       background: radial-gradient(circle at 30% 20%, #1b1b2f, #0d0d1a 80%);
       overflow:hidden;
+      perspective: 1000px; /* Giúp 3D transform mượt trên mobile */
     }
     .star {
       position:absolute;
@@ -23,6 +25,10 @@
     @keyframes twinkle {
       from { opacity:0.2; transform:scale(0.8); }
       to   { opacity:1; transform:scale(1.2); }
+    }
+    @-webkit-keyframes twinkle { /* Prefix cho Safari */
+      from { opacity:0.2; -webkit-transform:scale(0.8); }
+      to   { opacity:1; -webkit-transform:scale(1.2); }
     }
     .firefly {
       position:absolute;
@@ -45,40 +51,56 @@
       top:0;
       transform-origin: top center;
       animation: sway 5s cubic-bezier(0.45,0.05,0.55,0.95) infinite alternate;
+      -webkit-animation: sway 5s cubic-bezier(0.45,0.05,0.55,0.95) infinite alternate; /* Prefix */
+      will-change: transform; /* Tối ưu GPU */
     }
     .lantern-container.left   { left:20%; transform:translateX(-50%); }
     .lantern-container.center { left:50%; transform:translateX(-50%); }
     .lantern-container.right  { left:80%; transform:translateX(-50%); }
 
     .rope {
-      width:1.5px;
+      width:2px;
       height:150px;
-      margin: 1 auto;
+      margin:0 auto;
       background:linear-gradient(to bottom, #A52A2A, #E9967A);
     }
 
     .lantern {
-      width:150px;
+      width:180px;
       cursor:pointer;
       margin-top:0;
       animation: bounce 3s ease-in-out infinite;
+      -webkit-animation: bounce 3s ease-in-out infinite; /* Prefix */
     }
     .lantern img {
       width: 50%;
       display:block;
-      margin: 1 auto;
+      margin: 0 auto;
       filter: drop-shadow(0 0 25px rgba(255,200,100,0.8))
               drop-shadow(0 0 60px rgba(255,120,50,0.6));
       transition: filter 0.3s ease;
+      -webkit-transform: translateZ(0); /* Force GPU layer cho img */
+      backface-visibility: hidden; /* Tránh glitch rotate trên iOS */
+      -webkit-backface-visibility: hidden; /* Prefix */
+      will-change: filter; /* Cho randomGlow */
     }
     @keyframes sway {
-      0%   { transform:rotate(-7deg); }
-      50%  { transform:rotate(6deg); }
-      100% { transform:rotate(-5deg); }
+      0%   { transform:rotate(-3deg); } /* Giảm góc để tránh mất ảnh */
+      50%  { transform:rotate(2deg); }
+      100% { transform:rotate(-2deg); }
+    }
+    @-webkit-keyframes sway { /* Prefix cho Safari */
+      0%   { -webkit-transform:rotate(-3deg); }
+      50%  { -webkit-transform:rotate(2deg); }
+      100% { -webkit-transform:rotate(-2deg); }
     }
     @keyframes bounce {
       0%,100% { transform:translateY(0);}
       50% { transform:translateY(5px);}
+    }
+    @-webkit-keyframes bounce { /* Prefix */
+      0%,100% { -webkit-transform:translateY(0);}
+      50% { -webkit-transform:translateY(5px);}
     }
 
     .hint {
@@ -149,30 +171,67 @@
     }
 
     @media screen and (max-width: 480px) {
-      .lantern { width: 140px; }
-      .rope { height: 120px; }
-      .center-text { font-size: 20px; top: 55%; }
-      .hint { font-size: 16px; bottom: 20px; }
-      .arrow-up { bottom: 50px; font-size: 30px; }
+      .lantern {
+        width: 140px;
+      }
+      .rope {
+        height: 120px;
+      }
+      .center-text {
+        font-size: 20px;
+        top: 55%;
+      }
+      .hint {
+        font-size: 16px;
+        bottom: 20px;
+      }
+      .arrow-up {
+        bottom: 50px;
+        font-size: 30px;
+      }
     }
 
     @media screen and (max-width: 360px) {
       .lantern-container.left   { left:25%; }
       .lantern-container.center { left:50%; }
       .lantern-container.right  { left:75%; }
-      .lantern { width: 120px; }
-      .rope { height: 100px; }
-      .center-text { font-size: 18px; top: 50%; }
-      .hint { font-size: 14px; bottom: 10px; }
-      .arrow-up { bottom: 30px; font-size: 25px; }
+      .lantern {
+        width: 120px;
+      }
+      .rope {
+        height: 100px;
+      }
+      .center-text {
+        font-size: 18px;
+        top: 50%;
+      }
+      .hint {
+        font-size: 14px;
+        bottom: 10px;
+      }
+      .arrow-up {
+        bottom: 30px;
+        font-size: 25px;
+      }
     }
 
     @media (orientation: landscape) {
-      .center-text { top: 45%; line-height: 1.2; }
-      .arrow-up { bottom: 40px; }
-      .hint { bottom: 20px; }
-      .rope { height: 120px; }
-      .lantern { width: 140px; }
+      .center-text {
+        top: 45%;
+        line-height: 1.2;
+      }
+      .arrow-up {
+        bottom: 40px;
+      }
+      .hint {
+        bottom: 20px;
+      }
+      .rope {
+        height: 120px;
+      }
+      .lantern {
+        width: 140px;
+      }
       .lantern-container.left   { left:20%; }
       .lantern-container.center { left:50%; }
       .lantern-container.right  { left:80%; }
@@ -192,38 +251,42 @@
   <div class="lantern-container left">
     <div class="rope"></div>
     <div class="lantern" data-link="mualongden.html">
-      <img src="longden1.png" alt="Lồng đèn 1" />
+      <img src="longden1.png" alt="Lồng đèn 1" loading="eager" onerror="this.parentElement.innerHTML='<div style=\'width:180px;height:100px;background:radial-gradient(circle,#ffcc66,#ff9900);border-radius:50px;animation:bounce 3s ease-in-out infinite;\'></div>';" />
     </div>
   </div>
 
   <div class="lantern-container center">
     <div class="rope"></div>
     <div class="lantern" data-link="phaohoa/index2.html">
-      <img src="longden2.png" alt="Lồng đèn 2" />
+      <img src="longden2.png" alt="Lồng đèn 2" loading="eager" onerror="this.parentElement.innerHTML='<div style=\'width:180px;height:100px;background:radial-gradient(circle,#ffcc66,#ff9900);border-radius:50px;animation:bounce 3s ease-in-out infinite;\'></div>';" />
     </div>
   </div>
 
   <div class="lantern-container right">
     <div class="rope"></div>
     <div class="lantern" data-link="banhtrunthu.html">
-      <img src="longden3.png" alt="Lồng đèn 3" />
+      <img src="longden3.png" alt="Lồng đèn 3" loading="eager" onerror="this.parentElement.innerHTML='<div style=\'width:180px;height:100px;background:radial-gradient(circle,#ffcc66,#ff9900);border-radius:50px;animation:bounce 3s ease-in-out infinite;\'></div>';" />
     </div>
   </div>
 
   <div class="arrow-up" id="arrow">⬆</div>
+
   <div class="hint" id="hint">Nhấn vào lồng đèn đi </div>
   <div class="fade-out" id="fade"></div>
 
   <script>
-    const lanterns=document.querySelectorAll(".lantern img");
+    const lanterns=document.querySelectorAll(".lantern img"); // Target img
     const fade=document.getElementById("fade");
     const arrow=document.getElementById("arrow");
     const hint=document.getElementById("hint");
     const texts=document.querySelectorAll(".center-text p");
 
-    // tạo sao
+    // Giảm số lượng stars/fireflies trên mobile nhỏ để tối ưu
+    const numStars = window.innerWidth < 480 ? 40 : 80;
+    const numFireflies = window.innerWidth < 480 ? 6 : 12;
+
     const starContainer=document.getElementById("stars");
-    for(let i=0;i<80;i++){
+    for(let i=0;i<numStars;i++){
       const star=document.createElement("div");
       star.className="star";
       star.style.top=Math.random()*100+"vh";
@@ -232,9 +295,8 @@
       starContainer.appendChild(star);
     }
 
-    // tạo đom đóm
     const fireflyContainer=document.getElementById("fireflies");
-    for(let i=0;i<12;i++){
+    for(let i=0;i<numFireflies;i++){
       const fly=document.createElement("div");
       fly.className="firefly";
       fly.style.top=Math.random()*100+"vh";
@@ -243,7 +305,6 @@
       fireflyContainer.appendChild(fly);
     }
 
-    // hiệu ứng phát sáng ngẫu nhiên
     function randomGlow(lantern){
       setInterval(()=>{
         const blur = Math.floor(Math.random()*40)+20;
@@ -258,11 +319,9 @@
           drop-shadow(0 0 ${spread}px ${color[1]})
           drop-shadow(0 0 ${spread+30}px ${color[2]})
         `;
-      }, 500 + Math.random()*500);
+      }, 1000 + Math.random()*1000); // Tăng interval để tránh overload GPU
     }
     lanterns.forEach(randomGlow);
-
-    // hiện text lần lượt
     let index = 0;
     function showText(){
       if(index > 0) texts[index-1].style.opacity=0; 
@@ -279,7 +338,6 @@
     }
     showText();
 
-    // click vào lồng đèn
     document.querySelectorAll(".lantern").forEach(lantern=>{
       lantern.addEventListener("click",()=>{
         const targetPage = lantern.getAttribute("data-link");
@@ -288,13 +346,19 @@
       });
     });
 
-    // ✅ fix màn hình đen khi quay lại tab
-    window.addEventListener("pageshow", () => {
-      fade.style.opacity = "0";
-    });
-    document.addEventListener("visibilitychange", () => {
-      if (!document.hidden) {
-        fade.style.opacity = "0";
+    // Fix màn hình đen khi chuyển tab
+    let animationPaused = false;
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        animationPaused = true;
+        document.body.style.animationPlayState = 'paused';
+      } else {
+        if (animationPaused) {
+          animationPaused = false;
+          document.body.style.animationPlayState = 'running';
+          // Reset vị trí lồng đèn nếu cần
+          document.querySelectorAll('.lantern-container').forEach(c => c.style.transform = 'rotate(0deg)');
+        }
       }
     });
   </script>
