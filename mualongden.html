@@ -56,7 +56,7 @@ class Lantern {
     this.y = top ? rand(-H * 0.5, -10) : rand(-H * 0.2, -10);
     this.z = rand(zMin, zMax); 
     this.vx = rand(-0.3, 0.3);
-    this.vy = rand(0.2, 1.0) * (this.size / 24);
+    this.vy = rand(0.4, 2.0) * (this.size / 24);
     this.vz = rand(-0.01, 0.01); 
     this.phase = rand(0, Math.PI * 2);
     this.sway = rand(10, 40);
