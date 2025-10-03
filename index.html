@@ -13,6 +13,8 @@
       overflow:hidden;
       perspective: 1000px;
       -webkit-perspective: 1000px;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
     }
     .star {
       position:absolute;
@@ -22,6 +24,7 @@
       border-radius:50%;
       opacity:0.8;
       animation: twinkle 2s infinite alternate;
+      pointer-events:none;
     }
     @keyframes twinkle {
       from { opacity:0.2; transform:scale(0.8); }
@@ -35,6 +38,7 @@
       border-radius:50%;
       opacity:0.8;
       animation: fly 10s linear infinite;
+      pointer-events:none;
     }
     @keyframes fly {
       0%   { transform: translate(0,0); }
@@ -50,6 +54,7 @@
       transform-origin: top center;
       perspective: 500px;
       animation: sway 5s cubic-bezier(0.45,0.05,0.55,0.95) infinite alternate;
+      pointer-events:auto;
     }
     .lantern-container.left   { left:20%; transform:translateX(-50%); }
     .lantern-container.center { left:50%; transform:translateX(-50%); }
@@ -60,6 +65,7 @@
       height:150px;
       margin:0 auto;
       background:linear-gradient(to bottom, #A52A2A, #E9967A);
+      pointer-events:none;
     }
 
     /* Lồng đèn không còn khung chữ nhật */
@@ -75,6 +81,7 @@
       display: inline-block;
       width: auto;
       height: auto;
+      touch-action: manipulation;
     }
     .lantern img {
       display:block;
@@ -85,6 +92,9 @@
       padding:0;
       background:none;
       animation: bounce 3s ease-in-out infinite;
+      -webkit-user-drag: none;
+      user-select: none;
+      pointer-events:none; /* image itself doesn't consume taps; parent .lantern does */
     }
 
     @keyframes sway {
@@ -109,6 +119,8 @@
       text-align:center;
       animation: pulse 2s infinite;
       display:none;
+      z-index:20;
+      pointer-events:none;
     }
     @keyframes pulse {
       0% { opacity:0.4; }
@@ -120,7 +132,7 @@
       inset:0;
       background:#0d0d1a;
       opacity:0;
-      transition: opacity 1s ease;
+      transition: opacity 0.6s ease;
       pointer-events:none;
       z-index:999;
     }
@@ -139,13 +151,15 @@
       max-width:600px;
       text-shadow:0 0 10px rgba(255,180,80,0.8);
       z-index:10;
+      pointer-events:none;
     }
     .center-text p {
       opacity:0;
-      position:absolute;
+      position:relative;
       width:100%;
       left:0;
-      transition: opacity 1s;
+      transition: opacity 0.6s;
+      margin:6px 0;
     }
 
     .arrow-up {
@@ -158,16 +172,26 @@
       text-shadow:0 0 10px rgba(255,200,100,0.8);
       animation: bounceArrow 1.2s infinite;
       display:none;
+      z-index:20;
+      pointer-events:none;
     }
     @keyframes bounceArrow {
       0%,100% { transform:translateX(-50%) translateY(0); }
       50% { transform:translateX(-50%) translateY(-15px); }
+    }
+
+    /* small screens slight scaling */
+    @media (max-width:480px){
+      .lantern img { width:80px; }
+      .center-text { font-size:18px; top:65%; }
+      .hint { font-size:16px; bottom:30px; }
     }
   </style>
 </head>
 <body>
   <div id="stars"></div>
   <div id="fireflies"></div>
+
   <div class="center-text" id="textContainer">
     <p>Trung thu năm nay</p>
     <p>Anh có món quà muốn tặng cho bé Chip</p>
@@ -177,21 +201,21 @@
 
   <div class="lantern-container left">
     <div class="rope"></div>
-    <div class="lantern" data-link="mualongden.html">
+    <div class="lantern" data-link="mualongden.html" role="button" aria-label="Lồng đèn 1">
       <img src="longden1.png" alt="Lồng đèn 1" />
     </div>
   </div>
 
   <div class="lantern-container center">
     <div class="rope"></div>
-    <div class="lantern" data-link="phaohoa/index2.html">
+    <div class="lantern" data-link="phaohoa/index2.html" role="button" aria-label="Lồng đèn 2">
       <img src="longden2.png" alt="Lồng đèn 2" />
     </div>
   </div>
 
   <div class="lantern-container right">
     <div class="rope"></div>
-    <div class="lantern" data-link="banhtrunthu.html">
+    <div class="lantern" data-link="banhtrunthu.html" role="button" aria-label="Lồng đèn 3">
       <img src="longden3.png" alt="Lồng đèn 3" />
     </div>
   </div>
@@ -201,55 +225,180 @@
   <div class="fade-out" id="fade"></div>
 
   <script>
-    const lanterns=document.querySelectorAll(".lantern");
-    const fade=document.getElementById("fade");
-    const arrow=document.getElementById("arrow");
-    const hint=document.getElementById("hint");
-    const texts=document.querySelectorAll(".center-text p");
+    (function(){
+      const lanterns = document.querySelectorAll(".lantern");
+      const fade = document.getElementById("fade");
+      const arrow = document.getElementById("arrow");
+      const hint = document.getElementById("hint");
+      const texts = document.querySelectorAll(".center-text p");
+      const starContainer = document.getElementById("stars");
+      const fireflyContainer = document.getElementById("fireflies");
 
-    const numStars = window.innerWidth < 480 ? 40 : 80;
-    const numFireflies = window.innerWidth < 480 ? 6 : 12;
+      let textTimer = null;
+      let navTimer = null;
+      let index = 0;
 
-    const starContainer=document.getElementById("stars");
-    for(let i=0;i<numStars;i++){
-      const star=document.createElement("div");
-      star.className="star";
-      star.style.top=Math.random()*100+"vh";
-      star.style.left=Math.random()*100+"vw";
-      star.style.animationDuration=(1+Math.random()*3)+"s";
-      starContainer.appendChild(star);
-    }
-
-    const fireflyContainer=document.getElementById("fireflies");
-    for(let i=0;i<numFireflies;i++){
-      const fly=document.createElement("div");
-      fly.className="firefly";
-      fly.style.top=Math.random()*100+"vh";
-      fly.style.left=Math.random()*100+"vw";
-      fly.style.animationDuration=(8+Math.random()*5)+"s";
-      fireflyContainer.appendChild(fly);
-    }
-
-    let index = 0;
-    function showText(){
-      if(index > 0) texts[index-1].style.opacity=0; 
-      if(index < texts.length){
-        texts[index].style.opacity=1;
-        setTimeout(()=>{ index++; showText(); },3000); 
-      } else {
-        arrow.style.display="block";
-        hint.style.display="block";
+      // Utility: attach a tap-like listener (pointerup preferred)
+      function attachTap(el, handler){
+        if(window.PointerEvent){
+          el.addEventListener('pointerup', function onPointer(e){
+            // only left button / touches
+            if(e.pointerType === 'mouse' && e.button !== 0) return;
+            handler(e);
+          });
+        } else {
+          el.addEventListener('click', handler);
+        }
       }
-    }
-    showText();
 
-    lanterns.forEach(lantern=>{
-      lantern.addEventListener("click",()=>{
-        const targetPage = lantern.getAttribute("data-link");
-        fade.style.opacity="1";
-        setTimeout(()=>{ window.location.href=targetPage; },1000);
+      function clearTimers(){
+        if(textTimer){ clearTimeout(textTimer); textTimer = null; }
+        if(navTimer){ clearTimeout(navTimer); navTimer = null; }
+      }
+
+      function createStarsAndFireflies(){
+        // clear existing to avoid duplicates (important on pageshow)
+        starContainer.innerHTML = '';
+        fireflyContainer.innerHTML = '';
+
+        const numStars = window.innerWidth < 480 ? 40 : 80;
+        const numFireflies = window.innerWidth < 480 ? 6 : 12;
+
+        for(let i=0;i<numStars;i++){
+          const star=document.createElement("div");
+          star.className="star";
+          // spread slightly beyond to avoid clipping at edges when animating
+          star.style.top = (Math.random()*110 - 5) + "vh";
+          star.style.left = (Math.random()*110 - 5) + "vw";
+          star.style.animationDuration = (1+Math.random()*3)+"s";
+          starContainer.appendChild(star);
+        }
+
+        for(let i=0;i<numFireflies;i++){
+          const fly=document.createElement("div");
+          fly.className="firefly";
+          fly.style.top = (Math.random()*100) + "vh";
+          fly.style.left = (Math.random()*100) + "vw";
+          fly.style.animationDuration = (8+Math.random()*5)+"s";
+          fireflyContainer.appendChild(fly);
+        }
+      }
+
+      function resetUIState(){
+        // Reset core visible elements to known defaults
+        fade.style.transition = 'opacity 0.6s ease';
+        fade.style.opacity = '0';
+        fade.style.pointerEvents = 'none';
+
+        arrow.style.display = 'none';
+        hint.style.display = 'none';
+
+        texts.forEach(t => {
+          t.style.opacity = 0;
+        });
+
+        index = 0;
+        clearTimers();
+      }
+
+      function showTextSequence(){
+        // ensure starting state
+        texts.forEach(t => t.style.opacity = 0);
+
+        function step(){
+          if(index > 0){
+            texts[index-1].style.opacity = 0;
+          }
+          if(index < texts.length){
+            texts[index].style.opacity = 1;
+            index++;
+            textTimer = setTimeout(step, 3000);
+          } else {
+            arrow.style.display = 'block';
+            hint.style.display = 'block';
+          }
+        }
+
+        // slight delay to allow DOM transitions to be smooth on mobile
+        textTimer = setTimeout(step, 300);
+      }
+
+      function addLanternListeners(){
+        lanterns.forEach(lantern => {
+          // add listener only once to avoid duplicates on pageshow
+          if(lantern.dataset.listener === '1') return;
+          attachTap(lantern, (ev) => {
+            // visual feedback + navigate after short delay
+            const targetPage = lantern.getAttribute("data-link");
+            if(!targetPage) return;
+            // prevent double-tap quick navigations
+            if(fade.style.opacity === '1') return;
+
+            // show fade, enable pointer-events while fading
+            fade.style.pointerEvents = 'auto';
+            // small delay to allow pointerup to finish
+            requestAnimationFrame(()=> { fade.style.opacity = '1'; });
+
+            // navigate after fade (store timer to clear if user returns quickly)
+            navTimer = setTimeout(()=> {
+              // use replace to avoid stacking history if you want (but user wants back working, so use href)
+              window.location.href = targetPage;
+            }, 600); // 600ms matches CSS transition for smoother feel
+          });
+          lantern.dataset.listener = '1';
+        });
+      }
+
+      // init called on load and pageshow/visibility events
+      function init(){
+        // reset state (hides overlay, texts, arrow)
+        resetUIState();
+
+        // recreate ambient stars/fireflies
+        createStarsAndFireflies();
+
+        // add listeners (only once)
+        addLanternListeners();
+
+        // start the text sequence
+        showTextSequence();
+      }
+
+      // Run on initial load
+      window.addEventListener('load', init);
+
+      // pageshow handles bfcache restores in many mobile browsers
+      window.addEventListener('pageshow', function(e){
+        // If persisted (bfcache) we must re-init; do it regardless to be safe
+        init();
       });
-    });
+
+      // visibilitychange in case some browsers need it
+      document.addEventListener('visibilitychange', function(){
+        if(document.visibilityState === 'visible'){
+          // re-init so UI is always consistent when user returns
+          init();
+        } else {
+          // optional: clear timers when hidden
+          clearTimers();
+        }
+      });
+
+      // beforeunload: clear timers to be safe
+      window.addEventListener('beforeunload', function(){
+        clearTimers();
+      });
+
+      // Extra precaution: if user navigates via back and overlay stuck, ensure it's cleared after short delay
+      // (this helps with some odd browsers)
+      setTimeout(()=> {
+        if(fade.style.opacity === '1'){
+          fade.style.opacity = '0';
+          fade.style.pointerEvents = 'none';
+        }
+      }, 500);
+
+    })();
   </script>
 </body>
 </html>
